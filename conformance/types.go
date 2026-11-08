@@ -58,6 +58,15 @@ const (
 	OptionalLabel         = "Optional"
 )
 
+// PlacementDecision producer profile, pinned to the KEP-5313 revision its catalog follows.
+const (
+	PlacementDecisionProducerProfile      = "PLACEMENTDECISION-PRODUCER"
+	PlacementDecisionAPI                  = cp.PlacementDecisionKind
+	PlacementDecisionSpecRevision         = "a6d15526d6383230e2d17cd4af9f7e783b581cbb"
+	CheckPlacementDecisionAPIAvailability = "PlacementDecisionAPIAvailability"
+	CheckPlacementDecisionNamespaced      = "PlacementDecisionNamespaced"
+)
+
 // Outcome records whether a requirement was actually verified.
 type Outcome string
 
@@ -124,6 +133,10 @@ type Environment struct {
 	ClusterManager     string            `json:"clusterManager"     yaml:"clusterManager"`
 	ExpectedClusters   int               `json:"expectedClusters"   yaml:"expectedClusters"`
 	ObservedProfiles   []ObjectReference `json:"observedProfiles"   yaml:"observedProfiles"`
+	// PlacementDecision producer inputs; omitted from ClusterProfile reports.
+	DecisionNamespace string            `json:"decisionNamespace,omitempty" yaml:"decisionNamespace,omitempty"`
+	SchedulerName     string            `json:"schedulerName,omitempty"     yaml:"schedulerName,omitempty"`
+	ObservedDecisions []ObjectReference `json:"observedDecisions,omitempty" yaml:"observedDecisions,omitempty"`
 }
 
 type Requirement struct {
@@ -181,6 +194,8 @@ type ConformanceReport struct {
 
 // Options scopes an observation run. Injected clients allow downstream runners
 // to reuse their connection; neither client is used to mutate resources.
+// Each selected profile gets its own report, so selecting more than one
+// requires ReportPerAPI.
 type Options struct {
 	Kubeconfig        string
 	Context           string
@@ -188,6 +203,8 @@ type Options struct {
 	Namespace         string
 	ClusterManager    string
 	ExpectedClusters  int
+	DecisionNamespace string
+	SchedulerName     string
 	APIs              []string
 	Profiles          []string
 	SupportedFeatures []string
