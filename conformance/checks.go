@@ -184,15 +184,21 @@ func checkFields(req Requirement, profiles []cp.ClusterProfile) TestResult {
 			}
 		}
 	}
-	if len(missing) > 0 {
-		slices.Sort(missing)
-		state := NotSupported
-		if req.Level == LevelShould {
-			state = Failed
-		}
-		return outcome(req, state, "Not reported on: "+strings.Join(missing, ", "))
+	return unmet(req, "Not reported on: ", missing)
+}
+
+// unmet grades a capability the listed objects lack: a SHOULD fails, while a
+// MAY or Informative capability is not supported.
+func unmet(req Requirement, reason string, objects []string) TestResult {
+	if len(objects) == 0 {
+		return outcome(req, Passed, "")
 	}
-	return outcome(req, Passed, "")
+	slices.Sort(objects)
+	state := NotSupported
+	if req.Level == LevelShould {
+		state = Failed
+	}
+	return outcome(req, state, reason+strings.Join(objects, ", "))
 }
 
 // referenceTo identifies the exact object version a check observed.

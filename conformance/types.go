@@ -17,6 +17,7 @@ limitations under the License.
 package conformance
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/client-go/kubernetes"
@@ -33,6 +34,7 @@ const (
 	ScopeAPI              = "api"
 	ScopeManager          = "manager"
 	ScopeInventory        = "inventory"
+	ScopeDecision         = "decision"
 	RoleProducer          = "producer"
 	ReportFormatHTML      = "html"
 	ReportFormatYAML      = "yaml"
@@ -65,6 +67,14 @@ const (
 	PlacementDecisionSpecRevision         = "a6d15526d6383230e2d17cd4af9f7e783b581cbb"
 	CheckPlacementDecisionAPIAvailability = "PlacementDecisionAPIAvailability"
 	CheckPlacementDecisionNamespaced      = "PlacementDecisionNamespaced"
+	CheckReferenceResolution              = "ClusterProfileReferenceResolution"
+	CheckReferenceUniqueness              = "ClusterProfileReferenceUniqueness"
+	CheckDecisionKeyCorrelation           = "DecisionKeyCorrelation"
+	CheckDecisionIndexOrdering            = "DecisionIndexOrdering"
+	CheckPlacementKeyPresence             = "PlacementKeyPresence"
+	CheckSchedulerNamePresence            = "SchedulerNamePresence"
+	CheckDecisionReasonPresence           = "DecisionReasonPresence"
+	CheckSliceNameMatchesIndex            = "SliceNameMatchesIndex"
 )
 
 // Outcome records whether a requirement was actually verified.
@@ -218,4 +228,23 @@ type Options struct {
 	Timeout           time.Duration
 	Kubernetes        kubernetes.Interface
 	ClusterInventory  cpclient.Interface
+}
+
+// profile holds what differs between conformance profiles. The runner, report
+// writer, and validator are shared, so supporting another API adds one entry.
+type profile struct {
+	name     string
+	api      string
+	spec     Specification
+	catalog  []Requirement
+	features []string
+	digest   func() string
+	// environment records the profile's inputs. validateEnvironment checks them
+	// the same way for a run's Options and for a stored report.
+	environment         func(Options) Environment
+	validateEnvironment func(Environment) error
+	// observed names the kind, namespace, and objects a submission must identify.
+	observed func(Environment) (kind, namespace string, objects []ObjectReference)
+	// observe reads the implementation's output once and returns the check for each requirement.
+	observe func(context.Context, Options, *ConformanceReport) (func(Requirement) TestResult, error)
 }

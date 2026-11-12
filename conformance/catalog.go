@@ -17,7 +17,6 @@ limitations under the License.
 package conformance
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -164,25 +163,6 @@ func digestOf(c []Requirement) func() string {
 }
 
 func CatalogDigest() string { return catalogDigest() }
-
-// profile holds what differs between conformance profiles. The runner, report
-// writer, and validator are shared, so supporting another API adds one entry.
-type profile struct {
-	name     string
-	api      string
-	spec     Specification
-	catalog  []Requirement
-	features []string
-	digest   func() string
-	// environment records the profile's inputs. validateEnvironment checks them
-	// the same way for a run's Options and for a stored report.
-	environment         func(Options) Environment
-	validateEnvironment func(Environment) error
-	// observed names the kind, namespace, and objects a submission must identify.
-	observed func(Environment) (kind, namespace string, objects []ObjectReference)
-	// observe reads the implementation's output once and returns the check for each requirement.
-	observe func(context.Context, Options, *ConformanceReport) (func(Requirement) TestResult, error)
-}
 
 var clusterProfileProducer = profile{
 	name:     ProducerProfile,
