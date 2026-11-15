@@ -183,7 +183,8 @@ var clusterProfileProducer = profile{
 	observed: func(e Environment) (string, string, []ObjectReference) {
 		return "profile", e.InventoryNamespace, e.ObservedProfiles
 	},
-	observe: observeClusterProfiles,
+	namespaceColumn: "Inventory",
+	observe:         observeClusterProfiles,
 }
 
 // registry lists every profile. The first entry is the default selection, so

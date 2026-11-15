@@ -383,7 +383,7 @@ func GenerateMatrix(reportsDirectory string, w io.Writer) error {
 		if g := (matrixGroup{p.Name, r.Specification.Revision, r.Suite.Revision, r.API.Revision}); g != group {
 			group = g
 			columns := slices.Concat(
-				[]string{"Implementation", "Version / commit", "Mode", "Profile", "Result", "Namespace", "Run date"},
+				[]string{"Implementation", "Version / commit", "Mode", "Profile", "Result", def.namespaceColumn, "Run date"},
 				def.features,
 				[]string{"Report"},
 			)

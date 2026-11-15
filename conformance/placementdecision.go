@@ -153,7 +153,8 @@ var placementDecisionProducer = profile{
 	observed: func(e Environment) (string, string, []ObjectReference) {
 		return "decision", e.DecisionNamespace, e.ObservedDecisions
 	},
-	observe: observePlacementDecisions,
+	namespaceColumn: "Decision namespace",
+	observe:         observePlacementDecisions,
 }
 
 // decisionGroup is what a consumer reads as one decision: the slices sharing a
@@ -363,16 +364,12 @@ func checkUniqueReferences(req Requirement, groups []decisionGroup) TestResult {
 }
 
 // checkDecisionKeys can only see a multi-slice decision through its labels: a
-// decision-index above 0 means slice 0 exists too, so the key is required.
+// decision-index above 0 means slice 0 exists too, so the key is required. An
+// empty key groups nothing, so it counts as missing.
 func checkDecisionKeys(req Requirement, decisions []cp.PlacementDecision) TestResult {
 	violations := []string{}
 	for _, d := range decisions {
-		key, hasKey := d.Labels[cp.DecisionKeyLabel]
-		index, _, valid := decisionIndex(d)
-		switch {
-		case hasKey && key == "":
-			violations = append(violations, sliceName(d)+": decision-key is empty")
-		case !hasKey && valid && index > 0:
+		if index, _, valid := decisionIndex(d); valid && index > 0 && d.Labels[cp.DecisionKeyLabel] == "" {
 			violations = append(violations, fmt.Sprintf("%s: decision-index %d has no decision-key", sliceName(d), index))
 		}
 	}

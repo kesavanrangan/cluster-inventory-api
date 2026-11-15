@@ -139,7 +139,7 @@ func validateFeatures(names, allowed []string) error {
 	seen := map[string]bool{}
 	for _, f := range names {
 		if !slices.Contains(allowed, f) {
-			return fmt.Errorf("unknown supported feature %q", f)
+			return fmt.Errorf("supported feature %q is not offered by the selected profiles", f)
 		}
 		if seen[f] {
 			return fmt.Errorf("duplicate supported feature %q", f)

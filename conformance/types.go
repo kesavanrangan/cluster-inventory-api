@@ -245,6 +245,8 @@ type profile struct {
 	validateEnvironment func(Environment) error
 	// observed names the kind, namespace, and objects a submission must identify.
 	observed func(Environment) (kind, namespace string, objects []ObjectReference)
+	// namespaceColumn heads the matrix column showing that namespace.
+	namespaceColumn string
 	// observe reads the implementation's output once and returns the check for each requirement.
 	observe func(context.Context, Options, *ConformanceReport) (func(Requirement) TestResult, error)
 }

@@ -182,6 +182,14 @@ func TestUnitPlacementDecisionSetup(t *testing.T) {
 			}
 		})
 	}
+
+	o, _, _ := decisionOptions(t, sampleDecision("d", testScheduler))
+	o.APIs = []string{PlacementDecisionAPI}
+	o.SupportedFeatures = []string{Joined}
+	if _, err := Run(context.Background(), o); err == nil ||
+		!strings.Contains(err.Error(), `"Joined" is not offered by the selected profiles`) {
+		t.Fatalf("feature of an unselected profile: %v", err)
+	}
 }
 
 func TestUnitBothProfilesWritePerAPIReports(t *testing.T) {
@@ -318,9 +326,14 @@ func TestUnitPlacementDecisionChecks(t *testing.T) {
 			id:        CheckDecisionKeyCorrelation, out: Failed, message: "decision-index 1 has no decision-key",
 		},
 		{
-			name:      "empty decision-key",
+			name:      "empty decision-key on a later slice",
+			decisions: []runtime.Object{decisionSlice(0, "a"), labeled(decisionSlice(1, "b"), cp.DecisionKeyLabel, "")},
+			id:        CheckDecisionKeyCorrelation, out: Failed, message: "decision-index 1 has no decision-key",
+		},
+		{
+			name:      "empty decision-key on a single slice",
 			decisions: []runtime.Object{labeled(decisionSlice(0, "a"), cp.DecisionKeyLabel, "")},
-			id:        CheckDecisionKeyCorrelation, out: Failed, message: "decision-key is empty",
+			id:        CheckDecisionKeyCorrelation, out: Passed,
 		},
 		{
 			name:      "single slice without labels",
